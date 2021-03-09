@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  jupyterlab:
+    build: ./
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - /var/data/config/jupyter-playground/config/:/home/jovyan/.jupyter/
+      - /var/data/config/jupyter-playground/Notebooks:/home/jovyan/Notebooks
