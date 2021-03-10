@@ -94,7 +94,7 @@ USER ${USER}
 
 # Install Jupyterlab with extensions
 RUN echo "${YELLOW}Installing/Updating Jupyter Lab and all required packages"
-RUN pip install --upgrade pip tornado jupyterlab jupyterlab-git XPlot.Plotly nbdime nteract_on_jupyter  
+RUN pip install --upgrade pip tornado jupyterlab jupyterlab-git nbdime nteract_on_jupyter  
 
 # Rebuild Jupyter Lab and relaunch after install. Reason for this is jupyterlab-git doesn't seem to work without building jupyyterlab prior to launching app
 RUN echo "Rebuilding Jupyter lab... THIS WILL TAKE A WHILE! GET SOME COFFEE${NC}"
