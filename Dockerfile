@@ -4,10 +4,7 @@ RUN python -m pip install --upgrade pip
 COPY requirements.txt ./requirements.txt
 RUN python -m pip  install -r requirements.txt
 RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
-
-RUN Install-Package XPlot.Plotly -Version 4.0.0
-RUN Install-Package XPlot.GoogleCharts -Version 3.0.1
-
+ 
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV USER ${NB_USER}
