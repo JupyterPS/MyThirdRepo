@@ -39,7 +39,7 @@ RUN rm -rf $ANACONDA_HOME/envs/$CONDA_DEFAULT_ENV/share/jupyter
 
 ## Install necessary packages
 RUN apt-get update
-RUN apt-get install -y build-essential curl apt-utils XPlot.Plotly   
+RUN apt-get install -y build-essential curl apt-utils 
 
 ENV \
     # Enable detection of running in a container
