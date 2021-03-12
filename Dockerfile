@@ -107,7 +107,6 @@ RUN echo "$PATH"
 
 # Install lastest build from main branch of Microsoft.DotNet.Interactive
 RUN dotnet tool install -g Microsoft.dotnet-interactive --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
-RUN nuget list JSON -Source "https://nuget.org/api/v2" -Source "https://other-feed-url-goes-here"
 
 # Install kernel specs
 RUN dotnet interactive jupyter install
