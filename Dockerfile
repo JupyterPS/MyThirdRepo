@@ -11,31 +11,10 @@ ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
 
-## Color variables
-ENV YELLOW='\033[1;33m'
-ENV NC='\033[0m'
-
 WORKDIR ${HOME}
-
-## Uninstall and cleanup Jupyter Lab Prior so that extensions/addons can be installed
-## Trust me I tried so many things and its either build an image from scratch or uninstall/reinstall. Maybe revisit later
-RUN set -e
-RUN echo "Uninstalling old packages"
-RUN pip uninstall -y jupyterlab-git || true;
-RUN pip uninstall -y jupyterlab-server || true;
-RUN pip uninstall -y jupyterlab || true;
-RUN pip uninstall -y nbdime || true;
 
 # use root to install package with package installer
 USER root
-
-## Cleanup Folders
-RUN echo "Cleaning jupyter and jupyterlab workspace"
-RUN rm -rf ~/.jupyter
-RUN rm -rf $ANACONDA_HOME/etc/jupyter
-RUN rm -rf $ANACONDA_HOME/share/jupyter
-RUN rm -rf $ANACONDA_HOME/envs/$CONDA_DEFAULT_ENV/etc/jupyter
-RUN rm -rf $ANACONDA_HOME/envs/$CONDA_DEFAULT_ENV/share/jupyter
 
 ## Install necessary packages
 RUN apt-get update
@@ -135,9 +114,3 @@ WORKDIR ${HOME}/Notebooks/
 #RUN evcxr_jupyter --install
 #################################################
 
-## Runs Jupyter Lab on port 8888 and enables sudo to install packages
-#CMD jupyter lab --ip=* --port=8888 --no-browser --allow-root
-# --allow-root -e GRANT_SUDO=yes --user jovyan
-
-# to run 
-# docker run --user jovyan -e GRANT_SUDO=yes
