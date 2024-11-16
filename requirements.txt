@@ -1,9 +1,10 @@
-numpy
-matplotlib
-pandas
-scipy
-ipywidgets
-jupyter_contrib_nbextensions
-jupyterthemes
-spotipy
+numpy==1.24.2
+matplotlib==3.7.0
+pandas==1.5.2
+scipy==1.10.0
+ipywidgets==7.7.0
+jupyter_contrib_nbextensions==0.5.1
+jupyterthemes==0.20.0
+spotipy==2.22.1
+
  
