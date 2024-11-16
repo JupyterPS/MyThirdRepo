@@ -27,12 +27,11 @@ RUN dotnet_sdk_version=3.1.301 \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
     && dotnet --info
 
-# Install required Python packages (numpy, pandas, etc.)
+# Install necessary Python packages (numpy, pandas, etc.)
 RUN python -m pip install --upgrade pip \
     && python -m pip install numpy pandas matplotlib scipy ipywidgets \
     && python -m pip install jupyter_contrib_nbextensions jupyterthemes spotipy \
-    && jupyter contrib nbextension install --user \
-    && jupyter nbextension enable --py --sys-prefix widgetsnbextension
+    && python -m pip install notebook  # Install the notebook package to enable nbextensions
 
 # Install nteract for Jupyter (interactive notebooks)
 RUN pip install nteract_on_jupyter
@@ -59,6 +58,11 @@ USER ${NB_USER}
 EXPOSE 8888
 
 # Set the working directory to the user's home
+WORKDIR ${HOME}
+
+# Default command to start JupyterLab
+CMD ["start.sh", "jupyter", "lab"]
+
 WORKDIR ${HOME}
 
 # Default command to start JupyterLab
