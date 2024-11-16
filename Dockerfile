@@ -1,69 +1,56 @@
-# Use the Jupyter base notebook image
-FROM jupyter/base-notebook:latest
+# Base image: Jupyter Notebook with Python 3
+FROM jupyter/base-notebook:python-3.11
 
-# Set environment variables for user and home directory
-ARG NB_USER=jovyan
-ARG NB_UID=1000
-ENV USER ${NB_USER}
-ENV NB_UID ${NB_UID}
-ENV HOME /home/${NB_USER}
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-# Install necessary system dependencies (curl, libssl, libicu, etc.)
-USER root
-RUN apt-get update && apt-get install -y \
+# Update system and install required system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    libssl-dev \
     libicu-dev \
+    libssl-dev \
+    build-essential \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install .NET SDK
+# Install .NET Core SDK
 RUN dotnet_sdk_version=3.1.301 \
     && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
-    && dotnet_sha512='dd39931df438b8c1561f9a3bdb50f72372e29e5706d3fb4c490692f04a3d55f5acc0b46b8049bc7ea34dedba63c71b4c64c57032740cbea81eef1dce41929b4e' \
-    && echo "$dotnet_sha512 dotnet.tar.gz" | sha512sum -c - \
     && mkdir -p /usr/share/dotnet \
     && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet \
     && rm dotnet.tar.gz \
-    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
-    && dotnet --info
+    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 
-# Install necessary Python packages (numpy, pandas, etc.)
+# Upgrade pip and install Python packages
 RUN python -m pip install --upgrade pip \
     && python -m pip install numpy pandas matplotlib scipy ipywidgets \
     && python -m pip install jupyter_contrib_nbextensions jupyterthemes spotipy \
-    && python -m pip install notebook  # Install the notebook package to enable nbextensions
+    && python -m pip install plotly==5.15.0 jupyterlab-chart-editor redis \
+    && python -m pip install nteract_on_jupyter
 
-# Install nteract for Jupyter (interactive notebooks)
-RUN pip install nteract_on_jupyter
+# Install JupyterLab extensions
+RUN jupyter contrib nbextension install --user \
+    && jupyter nbextension enable --py --sys-prefix widgetsnbextension
 
-# Install JupyterLab extensions and build JupyterLab
-RUN jupyter labextension install @jupyterlab/plotly-extension jupyterlab-chart-editor
+# Enable Jupyter themes
+RUN jt -t chesterish
 
-# Install .NET interactive for Jupyter
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+# Configure Jupyter Notebook and Lab
+RUN jupyter lab build \
+    && jupyter nbextensions_configurator enable --sys-prefix \
+    && jupyter nbextension enable codefolding/main \
+    && jupyter nbextension enable spellchecker/main
 
-# Configure PATH for .NET tools
-ENV PATH="${PATH}:${HOME}/.dotnet/tools"
+# Add notebook extensions
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
-# Install .NET interactive Jupyter kernel
-RUN dotnet interactive jupyter install
+# Set working directory
+WORKDIR /home/jovyan/work
 
-# Clean up (reduce image size by removing unnecessary files)
-RUN rm -rf /root/.cache
-
-# Switch to jovyan user (default for Jupyter)
-USER ${NB_USER}
-
-# Expose the default Jupyter port
+# Expose Jupyter Notebook default port
 EXPOSE 8888
 
-# Set the working directory to the user's home
-WORKDIR ${HOME}
+# Start Jupyter Notebook
+CMD ["start-notebook.sh"]
 
-# Default command to start JupyterLab
-CMD ["start.sh", "jupyter", "lab"]
-
-WORKDIR ${HOME}
-
-# Default command to start JupyterLab
-CMD ["start.sh", "jupyter", "lab"]
