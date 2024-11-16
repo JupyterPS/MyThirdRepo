@@ -56,7 +56,3 @@ EXPOSE 8888
 CMD ["start-notebook.sh"]
 
 
-# Set the default command to start JupyterLab
-CMD ["start-notebook.sh"]
-
-
