@@ -5,6 +5,9 @@ FROM jupyter/base-notebook:python-3.11
 ENV DEBIAN_FRONTEND=noninteractive \
     DOTNET_CLI_TELEMETRY_OPTOUT=1
 
+# Run as root to install system dependencies
+USER root
+
 # Update and install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
@@ -25,7 +28,7 @@ RUN dotnet_sdk_version=3.1.301 \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
     && dotnet help
 
-# Switch to the jovyan user to avoid permissions issues
+# Switch to jovyan user to avoid running notebook as root
 USER jovyan
 
 # Install Python packages including Jupyter extensions and themes
@@ -51,10 +54,6 @@ RUN jupyter labextension install \
 
 # Expose the default Jupyter port
 EXPOSE 8888
-
-# Start Jupyter Lab by default
-CMD ["start-notebook.sh"]
-
 
 # Start Jupyter Lab by default
 CMD ["start-notebook.sh"]
