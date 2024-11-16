@@ -56,3 +56,7 @@ EXPOSE 8888
 CMD ["start-notebook.sh"]
 
 
+# Start Jupyter Lab by default
+CMD ["start-notebook.sh"]
+
+
