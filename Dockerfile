@@ -8,10 +8,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Run as root to install system dependencies
 USER root
 
-# Update and install system dependencies
+# Update and install system dependencies including libssl
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libicu-dev \
+    libssl1.1 \
     libssl-dev \
     build-essential \
     git \
@@ -27,7 +28,7 @@ RUN dotnet_sdk_version=3.1.301 \
     && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet \
     && rm dotnet.tar.gz \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
-    && dotnet help
+    && dotnet --version  # Check if .NET SDK is installed properly
 
 # Switch to jovyan user to avoid running notebook as root
 USER jovyan
@@ -55,7 +56,6 @@ RUN jupyter labextension install \
 EXPOSE 8888
 
 # Start Jupyter Lab by default
-
-
+CMD ["start-notebook.sh"]
 
 
