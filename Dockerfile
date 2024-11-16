@@ -76,11 +76,7 @@ USER ${USER}
 # Set the working directory to PowerShell scripts
 WORKDIR ${HOME}/WindowsPowerShell/
 
-# Expose the necessary ports (default Jupyter port)
-EXPOSE 8888
-
-# Define the entry point for the container (Binder will take care of this part)
-CMD ["start-notebook.sh"]
+ 
 
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
