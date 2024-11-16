@@ -1,16 +1,20 @@
+# Use the Jupyter base notebook image
 FROM jupyter/base-notebook:latest
 
-# Upgrade pip
-RUN python -m pip install --upgrade pip
+# Set environment variables for user and home directory
+ARG NB_USER=jovyan
+ARG NB_UID=1000
+ENV USER ${NB_USER}
+ENV NB_UID ${NB_UID}
+ENV HOME /home/${NB_USER}
 
-# Install dependencies for Jupyter and .NET
-RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
-RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
-RUN python -m pip install jupyter_contrib_nbextensions ipywidgets jupyterthemes
-
-# Install curl and other system dependencies as root
+# Install necessary system dependencies (curl, libssl, libicu, etc.)
 USER root
-RUN apt-get update && apt-get install -y curl libicu-dev libssl-dev
+RUN apt-get update && apt-get install -y \
+    curl \
+    libssl-dev \
+    libicu-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install .NET SDK
 RUN dotnet_sdk_version=3.1.301 \
@@ -21,56 +25,41 @@ RUN dotnet_sdk_version=3.1.301 \
     && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet \
     && rm dotnet.tar.gz \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
-    # Trigger first run experience by running arbitrary cmd
-    && dotnet help
+    && dotnet --info
 
-# Set environment variables for .NET
-ENV DOTNET_RUNNING_IN_CONTAINER=true \
-    DOTNET_USE_POLLING_FILE_WATCHER=true \
-    NUGET_XMLDOC_MODE=skip \
-    DOTNET_TRY_CLI_TELEMETRY_OPTOUT=true
+# Install required Python packages (numpy, pandas, etc.)
+RUN python -m pip install --upgrade pip \
+    && python -m pip install numpy pandas matplotlib scipy ipywidgets \
+    && python -m pip install jupyter_contrib_nbextensions jupyterthemes spotipy \
+    && jupyter contrib nbextension install --user \
+    && jupyter nbextension enable --py --sys-prefix widgetsnbextension
 
-# Configure working directory
-WORKDIR $HOME
-
-# Set the user and home directory
-ARG NB_USER=jovyan
-ARG NB_UID=1000
-ENV USER ${NB_USER}
-ENV NB_UID ${NB_UID}
-ENV HOME /home/${NB_USER}
-
-# Install PowerShell (Optional, if needed for scripts)
-RUN apt-get update && apt-get install -y wget \
-    && wget https://github.com/PowerShell/PowerShell/releases/download/v7.2.3/powershell-7.2.3-linux-x64.tar.gz \
-    && mkdir /opt/microsoft/powershell/7 \
-    && tar -xvf ./powershell-7.2.3-linux-x64.tar.gz -C /opt/microsoft/powershell/7 \
-    && ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
-
-# Optional: If using .NET interactive, you can install the tool
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
-
-# Copy configuration files and PowerShell scripts
-COPY ./config ${HOME}/.jupyter/
-COPY ./ ${HOME}/WindowsPowerShell/
-
-# Copy NuGet configuration
-COPY ./NuGet.config ${HOME}/nuget.config
-
-# Set ownership and switch to jovyan user
-RUN chown -R ${NB_UID} ${HOME}
-USER ${USER}
-
-# Install nteract
+# Install nteract for Jupyter (interactive notebooks)
 RUN pip install nteract_on_jupyter
 
-# Install kernel specifications
+# Install JupyterLab extensions and build JupyterLab
+RUN jupyter labextension install @jupyterlab/plotly-extension jupyterlab-chart-editor
+
+# Install .NET interactive for Jupyter
+RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+
+# Configure PATH for .NET tools
+ENV PATH="${PATH}:${HOME}/.dotnet/tools"
+
+# Install .NET interactive Jupyter kernel
 RUN dotnet interactive jupyter install
 
-# Enable telemetry once Jupyter is installed for the image
-ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
+# Clean up (reduce image size by removing unnecessary files)
+RUN rm -rf /root/.cache
 
-# Set the working directory to the Windows PowerShell scripts
-WORKDIR ${HOME}/WindowsPowerShell/
+# Switch to jovyan user (default for Jupyter)
+USER ${NB_USER}
 
+# Expose the default Jupyter port
+EXPOSE 8888
 
+# Set the working directory to the user's home
+WORKDIR ${HOME}
+
+# Default command to start JupyterLab
+CMD ["start.sh", "jupyter", "lab"]
