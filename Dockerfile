@@ -5,6 +5,12 @@ FROM jupyter/base-notebook:python-3.11
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 
+# Ensure apt-get permissions and state are correct
+USER root
+RUN rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /var/lib/apt/lists/partial \
+    && chmod -R 755 /var/lib/apt/lists
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
@@ -13,6 +19,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
     && rm -rf /var/lib/apt/lists/*
+
+# Return back to the default Jupyter user
+USER jovyan
 
 # Install .NET SDK (3.1)
 RUN dotnet_sdk_version=3.1.301 \
@@ -50,7 +59,4 @@ EXPOSE 8888
 # Start Jupyter Notebook
 CMD ["start-notebook.sh"]
 
-
-# Start Jupyter Notebook
-CMD ["start-notebook.sh"]
 
