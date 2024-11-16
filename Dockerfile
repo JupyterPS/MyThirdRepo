@@ -8,7 +8,8 @@ RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
 RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
 RUN python -m pip install jupyter_contrib_nbextensions ipywidgets jupyterthemes
 
-# Install curl and other system dependencies
+# Install curl and other system dependencies as root
+USER root
 RUN apt-get update && apt-get install -y curl libicu-dev libssl1.1
 
 # Install .NET SDK
@@ -49,26 +50,26 @@ RUN apt-get update && apt-get install -y wget \
 # Optional: If using .NET interactive, you can install the tool
 RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
 
-# Copy notebooks and config files into the container
+# Copy configuration files and PowerShell scripts
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 
-# Set up .NET interactive (if needed)
-RUN dotnet interactive jupyter install
+# Copy NuGet configuration
+COPY ./NuGet.config ${HOME}/nuget.config
 
-# Set root to Notebooks
-WORKDIR ${HOME}/WindowsPowerShell/
-
-# Install nteract (optional)
-RUN pip install nteract_on_jupyter
-
-# Enable telemetry after jupyter is installed
-ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
-
-# Ensure ownership of the home directory
+# Set ownership and switch to jovyan user
 RUN chown -R ${NB_UID} ${HOME}
-
 USER ${USER}
 
-# Start the Jupyter Lab server
-CMD ["start-notebook.sh"]
+# Install nteract
+RUN pip install nteract_on_jupyter
+
+# Install kernel specifications
+RUN dotnet interactive jupyter install
+
+# Enable telemetry once Jupyter is installed for the image
+ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
+
+# Set the working directory to the Windows PowerShell scripts
+WORKDIR ${HOME}/WindowsPowerShell/
+
