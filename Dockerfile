@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     build-essential \
     git \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install .NET SDK (specifically version 3.1.301)
@@ -57,5 +58,6 @@ EXPOSE 8888
 
 # Start Jupyter Lab by default
 CMD ["start-notebook.sh"]
+
 
 
