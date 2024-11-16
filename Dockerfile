@@ -10,7 +10,7 @@ RUN python -m pip install jupyter_contrib_nbextensions ipywidgets jupyterthemes
 
 # Install curl and other system dependencies as root
 USER root
-RUN apt-get update && apt-get install -y curl libicu-dev libssl1.1
+RUN apt-get update && apt-get install -y curl libicu-dev libssl-dev
 
 # Install .NET SDK
 RUN dotnet_sdk_version=3.1.301 \
@@ -72,4 +72,5 @@ ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
 # Set the working directory to the Windows PowerShell scripts
 WORKDIR ${HOME}/WindowsPowerShell/
+
 
