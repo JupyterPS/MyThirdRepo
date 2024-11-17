@@ -29,6 +29,7 @@ RUN apt-get install -y dotnet-sdk-8.0
 
 # Step 4: Install .NET Interactive tools
 RUN dotnet tool install -g Microsoft.dotnet-interactive \
+    && export PATH=$PATH:/root/.dotnet/tools \
     && dotnet interactive jupyter install
 
 # Step 5: Install PowerShell
@@ -53,8 +54,3 @@ WORKDIR /workspace
 
 # Step 11: Set the default command to run JupyterLab
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root"]
-
-# Start Jupyter Lab by default
-CMD ["start-notebook.sh"]
-
-
