@@ -50,7 +50,7 @@ RUN mkdir -p /root/.local/share/jupyter/kernels/csharp \
     && mkdir -p /root/.local/share/jupyter/kernels/powershell
 
 # Step 10: Install .NET Interactive kernels for .NET languages (C#, F#, PowerShell)
-RUN dotnet interactive jupyter install --csharp --fsharp --powershell
+RUN dotnet interactive jupyter install
 
 # Step 11: Expose necessary ports and set up environment variables
 ENV PATH=$PATH:/root/.dotnet/tools
