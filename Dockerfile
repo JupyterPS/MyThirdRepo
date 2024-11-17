@@ -29,8 +29,7 @@ RUN apt-get install -y dotnet-sdk-8.0
 
 # Step 4: Install .NET Interactive tools
 RUN dotnet tool install -g Microsoft.dotnet-interactive \
-    && export PATH=$PATH:/root/.dotnet/tools \
-    && dotnet interactive jupyter install
+    && export PATH=$PATH:/root/.dotnet/tools
 
 # Step 5: Install PowerShell
 RUN apt-get install -y powershell
@@ -43,14 +42,19 @@ RUN apt-get install -y python3-pip \
     && pip3 install --upgrade pip \
     && pip3 install jupyterlab
 
-# Step 8: Install .NET Interactive kernels for .NET languages (C#, F#, PowerShell)
+# Step 8: Create necessary directories for Jupyter kernels
+RUN mkdir -p /root/.local/share/jupyter/kernels/csharp \
+    && mkdir -p /root/.local/share/jupyter/kernels/fsharp \
+    && mkdir -p /root/.local/share/jupyter/kernels/powershell
+
+# Step 9: Install .NET Interactive kernels for .NET languages (C#, F#, PowerShell)
 RUN dotnet interactive jupyter install --csharp --fsharp --powershell
 
-# Step 9: Expose necessary ports and set up environment variables
+# Step 10: Expose necessary ports and set up environment variables
 ENV PATH=$PATH:/root/.dotnet/tools
 
-# Step 10: Set working directory
+# Step 11: Set working directory
 WORKDIR /workspace
 
-# Step 11: Set the default command to run JupyterLab
+# Step 12: Set the default command to run JupyterLab
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root"]
