@@ -1,59 +1,58 @@
-# Use the Jupyter base image with Python 3.11
-FROM jupyter/base-notebook:python-3.11
+# Use a base image with Ubuntu 22.04
+FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
 
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive \
-    DOTNET_CLI_TELEMETRY_OPTOUT=1
+# Set environment variables for non-interactive apt installs
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Run as root to install system dependencies
-USER root
-
-# Update and install system dependencies including libssl
+# Step 1: Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libicu-dev \
-    libssl1.1 \
+    libssl3 \
     libssl-dev \
     build-essential \
     git \
     ca-certificates \
+    software-properties-common \
+    apt-transport-https \
+    lsb-release \
+    gnupg \
     && rm -rf /var/lib/apt/lists/*
 
-# Install .NET SDK (specifically version 3.1.301)
-RUN dotnet_sdk_version=3.1.301 \
-    && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
-    && dotnet_sha512='dd39931df438b8c1561f9a3bdb50f72372e29e5706d3fb4c490692f04a3d55f5acc0b46b8049bc7ea34dedba63c71b4c64c57032740cbea81eef1dce41929b4e' \
-    && echo "$dotnet_sha512 dotnet.tar.gz" | sha512sum -c - \
-    && mkdir -p /usr/share/dotnet \
-    && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet \
-    && rm dotnet.tar.gz \
-    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
-    && dotnet --version  # Check if .NET SDK is installed properly
+# Step 2: Add Microsoft's APT repository for PowerShell and .NET SDK
+RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get update
 
-# Switch to jovyan user to avoid running notebook as root
-USER jovyan
+# Step 3: Install .NET SDK
+RUN apt-get install -y dotnet-sdk-8.0
 
-# Install Python packages including Jupyter extensions and themes
-RUN pip install --no-cache-dir \
-    numpy \
-    pandas \
-    matplotlib \
-    scipy \
-    ipywidgets \
-    jupyter_contrib_nbextensions \
-    jupyterthemes \
-    spotipy \
-    notebook \
-    && jupyter contrib nbextension install --user \
-    && jupyter nbextension enable --py --sys-prefix widgetsnbextension
+# Step 4: Install .NET Interactive tools
+RUN dotnet tool install -g Microsoft.dotnet-interactive \
+    && dotnet interactive jupyter install
 
-# Install JupyterLab extensions
-RUN jupyter labextension install \
-    @jupyterlab/plotly-extension \
-    jupyterlab-chart-editor
+# Step 5: Install PowerShell
+RUN apt-get install -y powershell
 
-# Expose the default Jupyter port
-EXPOSE 8888
+# Step 6: Add PowerShell to PATH for access in the container
+ENV PATH=$PATH:/usr/bin/pwsh
+
+# Step 7: Install JupyterLab and its Python dependencies
+RUN apt-get install -y python3-pip \
+    && pip3 install --upgrade pip \
+    && pip3 install jupyterlab
+
+# Step 8: Install .NET Interactive kernels for .NET languages (C#, F#, PowerShell)
+RUN dotnet interactive jupyter install --csharp --fsharp --powershell
+
+# Step 9: Expose necessary ports and set up environment variables
+ENV PATH=$PATH:/root/.dotnet/tools
+
+# Step 10: Set working directory
+WORKDIR /workspace
+
+# Step 11: Set the default command to run JupyterLab
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root"]
 
 # Start Jupyter Lab by default
 CMD ["start-notebook.sh"]
