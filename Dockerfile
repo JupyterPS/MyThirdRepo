@@ -1,62 +1,52 @@
-# Use a base image with Ubuntu 22.04
-FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
+# Step 1: Use the official Jupyter base notebook image
+FROM jupyter/base-notebook:latest
 
-# Set environment variables for non-interactive apt installs
-ENV DEBIAN_FRONTEND=noninteractive
+# Step 2: Install necessary system packages (including PowerShell)
+USER root
 
-# Step 1: Install dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    libicu-dev \
-    libssl3 \
-    libssl-dev \
+# Step 3: Install necessary packages, including curl and apt dependencies
+RUN apt-get update && apt-get install -y \
     build-essential \
-    git \
-    ca-certificates \
-    software-properties-common \
-    apt-transport-https \
-    lsb-release \
+    libfreetype6-dev \
+    libpng-dev \
+    libblas-dev \
+    liblapack-dev \
+    gfortran \
+    pkg-config \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    curl \
     gnupg \
+    lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
-# Step 2: Add Microsoft's APT repository for PowerShell and .NET SDK
-RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O packages-microsoft-prod.deb \
-    && dpkg -i packages-microsoft-prod.deb \
-    && apt-get update
+# Step 4: Install PowerShell by adding the Microsoft repository
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc \
+    && curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | tee /etc/apt/sources.list.d/microsoft-prod.list \
+    && apt-get update && apt-get install -y powershell \
+    && rm -rf /var/lib/apt/lists/*
 
-# Step 3: Install .NET SDK
-RUN apt-get install -y dotnet-sdk-8.0
+# Step 5: Upgrade pip to the latest version
+RUN python -m pip install --upgrade pip
 
-# Step 4: Install .NET Interactive tools
-RUN dotnet tool install -g Microsoft.dotnet-interactive
+# Step 6: Install the PowerShell Jupyter kernel
+RUN pip install powershell-kernel
 
-# Step 5: Install PowerShell
-RUN apt-get install -y powershell
+# Step 7: Install any additional Python dependencies (e.g., matplotlib)
+RUN pip install matplotlib
 
-# Step 6: Add PowerShell to PATH for access in the container
-ENV PATH=$PATH:/usr/bin/pwsh
+# Step 8: Install requirements from a requirements.txt file (if available)
+COPY requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Step 7: Install JupyterLab and its Python dependencies
-RUN apt-get install -y python3-pip \
-    && pip3 install --upgrade pip \
-    && pip3 install jupyterlab
+# Step 9: Setup PowerShell kernel (automatically runs when the container starts)
+RUN python -m powershell_kernel.install
 
-# Step 8: Ensure the PATH is correctly set to include the dotnet tools directory
-ENV PATH=$PATH:/root/.dotnet/tools
+# Step 10: Switch back to the default Jupyter user
+USER $NB_USER
 
-# Step 9: Create necessary directories for Jupyter kernels
-RUN mkdir -p /root/.local/share/jupyter/kernels/csharp \
-    && mkdir -p /root/.local/share/jupyter/kernels/fsharp \
-    && mkdir -p /root/.local/share/jupyter/kernels/powershell
+# Step 11: Expose the necessary JupyterLab port
+EXPOSE 8888
 
-# Step 10: Install .NET Interactive kernels for .NET languages (C#, F#, PowerShell)
-RUN dotnet interactive jupyter install
-
-# Step 11: Expose necessary ports and set up environment variables
-ENV PATH=$PATH:/root/.dotnet/tools
-
-# Step 12: Set working directory
-WORKDIR /workspace
-
-# Step 13: Set the default command to run JupyterLab
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root"]
+# Step 12: Set the entrypoint to start Jupyter Lab with PowerShell available as a kernel
+CMD ["start.sh", "jupyter", "lab", "--NotebookApp.token=''"]
