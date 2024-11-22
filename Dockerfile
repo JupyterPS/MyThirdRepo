@@ -1,8 +1,15 @@
-# Use the official .NET ASP.NET Core image as the base image
-FROM mcr.microsoft.com/dotnet/aspnet:3.1
+# Use the official .NET SDK image as the base image
+FROM mcr.microsoft.com/dotnet/sdk:3.1 AS dotnet
+
+# Create a new base image from the Jupyter base-notebook
+FROM jupyter/base-notebook:latest
 
 # Switch to root user to install additional dependencies
 USER root
+
+# Copy .NET SDK tools from the dotnet image
+COPY --from=dotnet /usr/share/dotnet /usr/share/dotnet
+COPY --from=dotnet /usr/bin/dotnet /usr/bin/dotnet
 
 # Install required packages, n package manager, and Node.js
 RUN apt-get update && apt-get install -y \
