@@ -24,17 +24,19 @@ ENV \
     NUGET_XMLDOC_MODE=skip \
     # Opt out of telemetry until after we install jupyter when building the image, this prevents caching of machine id
     DOTNET_TRY_CLI_TELEMETRY_OPTOUT=true
+    
 # Install .NET CLI dependencies
-#RUN apt-get update \
-#    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-#        libc6 \
-#        libgcc1 \
-#        libgssapi-krb5-2 \
-#       libicu66 \
-#        libssl1.1 \
-#        libstdc++6 \
-#        zlib1g \
-#    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        libc6 \
+        libgcc1 \
+        libgssapi-krb5-2 \
+        libicu67 \
+        libssl1.1 \
+        libstdc++6 \
+        zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install .NET Core SDK
 RUN dotnet_sdk_version=3.1.301 \
     && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
