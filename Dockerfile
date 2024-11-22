@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS dotnet
+# Use the official .NET SDK image as the base image
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-bionic AS dotnet
 
 # Create a new base image from the Jupyter base-notebook
 FROM jupyter/base-notebook:latest
@@ -21,6 +22,12 @@ RUN apt-get update && apt-get install -y \
     zlib1g \
     curl && \
     rm -rf /var/lib/apt/lists/*
+
+# Install ASP.NET Core runtime
+RUN curl -SL --output aspnetcore-runtime.tar.gz https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/3.1.27/aspnetcore-runtime-3.1.27-linux-x64.tar.gz \
+    && mkdir -p /usr/share/dotnet \
+    && tar -xzf aspnetcore-runtime.tar.gz -C /usr/share/dotnet \
+    && rm aspnetcore-runtime.tar.gz
 
 # Upgrade pip
 RUN python -m pip install --upgrade pip
@@ -47,9 +54,9 @@ ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
 
 # Copy configuration files and notebooks
-COPY ./config ${HOME}/.jupyter/
-COPY ./ ${HOME}/WindowsPowerShell/
-COPY ./NuGet.config ${HOME}/nuget.config
+COPY --chown=${NB_UID}:${NB_UID} ./config ${HOME}/.jupyter/
+COPY --chown=${NB_UID}:${NB_UID} ./ ${HOME}/WindowsPowerShell/
+COPY --chown=${NB_UID}:${NB_UID} ./NuGet.config ${HOME}/nuget.config
 
 # Change ownership and verify user exists
 RUN chown -R ${NB_UID} ${HOME} && id ${NB_UID}
