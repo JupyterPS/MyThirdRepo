@@ -7,10 +7,6 @@ FROM jupyter/base-notebook:latest
 # Switch to root user to install additional dependencies
 USER root
 
-# Copy .NET SDK tools from the dotnet image
-COPY --from=dotnet /usr/share/dotnet /usr/share/dotnet
-COPY --from=dotnet /usr/bin/dotnet /usr/bin/dotnet
-
 # Install required packages, n package manager, and Node.js
 RUN apt-get update && apt-get install -y \
     python3-pip \
@@ -24,6 +20,9 @@ RUN apt-get update && apt-get install -y \
 
 # Install JupyterLab separately to avoid memory issues
 RUN python3 -m pip install jupyterlab
+
+# Install .NET Runtime to ensure necessary components are present
+RUN apt-get install -y dotnet-runtime-3.1
 
 # Install .NET Interactive tool
 RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302
