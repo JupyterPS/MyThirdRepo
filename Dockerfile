@@ -1,4 +1,11 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-bionic AS dotnet
+
+# Create a new base image from the Jupyter base-notebook
 FROM jupyter/base-notebook:latest
+
+# Copy .NET SDK tools from the dotnet image
+COPY --from=dotnet /usr/share/dotnet /usr/share/dotnet
+COPY --from=dotnet /usr/bin/dotnet /usr/bin/dotnet
 
 # Upgrade pip
 RUN python -m pip install --upgrade pip
@@ -36,17 +43,6 @@ RUN apt-get update && apt-get install -y \
     libstdc++6 \
     zlib1g && \
     rm -rf /var/lib/apt/lists/*
-
-# Install .NET Core SDK
-RUN dotnet_sdk_version=3.1.301 \
-    && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
-    && dotnet_sha512='dd39931df438b8c1561f9a3bdb50f72372e29e5706d3fb4c490692f04a3d55f5acc0b46b8049bc7ea34dedba63c71b4c64c57032740cbea81eef1dce41929b4e' \
-    && echo "$dotnet_sha512 dotnet.tar.gz" | sha512sum -c - \
-    && mkdir -p /usr/share/dotnet \
-    && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet \
-    && rm dotnet.tar.gz \
-    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
-    && dotnet help
 
 # Copy configuration files and notebooks
 COPY ./config ${HOME}/.jupyter/
