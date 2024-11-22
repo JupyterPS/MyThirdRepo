@@ -1,81 +1,68 @@
+# Base Image
 FROM jupyter/base-notebook:latest
 
-# Upgrade pip
-RUN python -m pip install --upgrade pip
-
-# Copy requirements.txt file
-COPY requirements.txt ./requirements.txt
-
-# Install Python packages
-RUN python -m pip install -r requirements.txt
-
-# Install Jupyter Notebook and additional Python packages
-RUN python -m pip install --upgrade --no-deps --force-reinstall notebook \
-    && python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
-
-# Build JupyterLab
-RUN jupyter lab build --minimize=False
-
-# Working Directory
-WORKDIR $HOME
-ARG NB_USER=jovyan
-ARG NB_UID=1000
-ENV USER ${NB_USER}
-ENV NB_UID ${NB_UID}
-ENV HOME /home/${NB_USER}
+# Switch to root user for system-level installations
 USER root
 
-# Install curl
-RUN apt-get update && apt-get install -y curl
+# Install essential system tools and PowerShell
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    gnupg \
+    apt-transport-https \
+    software-properties-common \
+    && curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc \
+    && curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | tee /etc/apt/sources.list.d/microsoft-prod.list \
+    && apt-get update && apt-get install -y powershell \
+    && rm -rf /var/lib/apt/lists/*
 
-# Add older repository for libssl1.0.0
-RUN echo "deb http://ftp.us.debian.org/debian/ jessie main" > /etc/apt/sources.list.d/jessie.list
+# Step 3: Install necessary packages, including curl and apt dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libfreetype6-dev \
+    libpng-dev \
+    libblas-dev \
+    liblapack-dev \
+    gfortran \
+    pkg-config \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    curl \
+    gnupg \
+    lsb-release \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install libssl1.0.0
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        libc6 \
-        libgcc1 \
-        libgssapi-krb5-2 \
-        libssl1.0.0 \
-        libstdc++6 \
-        zlib1g && \
-    rm -rf /var/lib/apt/lists/*
+# Step 4: Install PowerShell by adding the Microsoft repository
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc \
+    && curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | tee /etc/apt/sources.list.d/microsoft-prod.list \
+    && apt-get update && apt-get install -y powershell \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install .NET CLI dependencies
-RUN dotnet_sdk_version=3.1.301 \
-    && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
-    && dotnet_sha512='dd39931df438b8c1561f9a3bdb50f72372e29e5706d3fb4c490692f04a3d55f5acc0b46b8049bc7ea34dedba63c71b4c64c57032740cbea81eef1dce41929b4e' \
-    && echo "$dotnet_sha512 dotnet.tar.gz" | sha512sum -c - \
-    && mkdir -p /usr/share/dotnet \
-    && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet \
-    && rm dotnet.tar.gz \
-    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
-    && dotnet help
+# Step 5: Upgrade pip to the latest version
+RUN python -m pip install --upgrade pip
 
-# Copy configuration files and notebooks
-COPY ./config ${HOME}/.jupyter/
-COPY ./ ${HOME}/WindowsPowerShell/
-COPY ./NuGet.config ${HOME}/nuget.config
+# Step 6: Install the PowerShell Jupyter kernel
+RUN pip install powershell-kernel
 
-# Change ownership
-RUN chown -R ${NB_UID} ${HOME}
-USER ${USER}
+# Step 7: Install any additional Python dependencies (e.g., matplotlib)
+RUN pip install matplotlib
 
-# Install nteract
-RUN pip install nteract_on_jupyter
+# Step 8: Install requirements from a requirements.txt file (if available)
+COPY requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt    
 
-# Install Microsoft.dotnet-interactive tool
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+# Install Python dependencies
+RUN python -m pip install --upgrade pip \
+    && pip install powershell-kernel matplotlib
 
-# Configure PATH
-ENV PATH="${PATH}:${HOME}/.dotnet/tools"
+# Set up PowerShell kernel for Jupyter
+RUN python -m powershell_kernel.install
 
-# Install kernel specs
-RUN dotnet interactive jupyter install
+# Switch back to the default Jupyter user
+USER $NB_USER
 
-# Re-enable telemetry
-ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
+# Expose Jupyter's default port
+EXPOSE 8888
 
-# Set working directory to notebooks
-WORKDIR ${HOME}/WindowsPowerShell/
+# Command to start Jupyter Lab
+CMD ["start.sh", "jupyter", "lab", "--NotebookApp.token=''"]
