@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/interactive
+FROM mcr.microsoft.com/dotnet/interactive:3.1
 
 # Switch to root user to install additional dependencies
 USER root
