@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     curl \
     libicu-dev \
-    openssl \
+    build-essential \
     && curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n \
     && chmod +x /usr/local/bin/n \
     && n 14.17.0 \
@@ -22,6 +22,14 @@ RUN apt-get update && apt-get install -y \
 
 # Install JupyterLab separately to avoid memory issues
 RUN python3 -m pip install jupyterlab
+
+# Download and install OpenSSL 1.0.x from source
+RUN curl -O https://www.openssl.org/source/openssl-1.0.2u.tar.gz \
+    && tar -xvzf openssl-1.0.2u.tar.gz \
+    && cd openssl-1.0.2u \
+    && ./config \
+    && make \
+    && make install
 
 # Install .NET Runtime using the official installation script
 RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1 --install-dir /usr/share/dotnet
