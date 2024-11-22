@@ -4,12 +4,13 @@ FROM mcr.microsoft.com/dotnet/aspnet:3.1
 # Switch to root user to install additional dependencies
 USER root
 
-# Install Jupyter, Node.js, and additional Python packages
+# Install required packages and Node.js from the official source
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
-    nodejs \
-    npm \
+    curl \
+    && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
+    && apt-get install -y nodejs \
     && python3 -m pip install --upgrade pip \
     && python3 -m pip install notebook numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose \
     && jupyter lab build --minimize=False
