@@ -7,6 +7,18 @@ FROM jupyter/base-notebook:latest
 COPY --from=dotnet /usr/share/dotnet /usr/share/dotnet
 COPY --from=dotnet /usr/bin/dotnet /usr/bin/dotnet
 
+# Install .NET runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libc6 \
+    libgcc1 \
+    libgssapi-krb5-2 \
+    libicu-dev \
+    libssl-dev \
+    libstdc++6 \
+    zlib1g \
+    curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Upgrade pip
 RUN python -m pip install --upgrade pip
 
@@ -31,18 +43,6 @@ ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
 USER root
-
-# Install curl and other dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    libc6 \
-    libgcc1 \
-    libgssapi-krb5-2 \
-    libicu-dev \
-    libssl-dev \
-    libstdc++6 \
-    zlib1g && \
-    rm -rf /var/lib/apt/lists/*
 
 # Copy configuration files and notebooks
 COPY ./config ${HOME}/.jupyter/
