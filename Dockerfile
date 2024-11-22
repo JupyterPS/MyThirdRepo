@@ -26,16 +26,17 @@ ENV \
     DOTNET_TRY_CLI_TELEMETRY_OPTOUT=true
     
 # Install .NET CLI dependencies
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         libc6 \
         libgcc1 \
         libgssapi-krb5-2 \
         libicu67 \
-        libssl1.1 \
+        libssl3 \
         libstdc++6 \
-        zlib1g \
-    && rm -rf /var/lib/apt/lists/*
+        zlib1g && \
+    rm -rf /var/lib/apt/lists/*
+
 
 # Install .NET Core SDK
 RUN dotnet_sdk_version=3.1.301 \
