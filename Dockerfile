@@ -22,6 +22,12 @@ RUN apt-get update && apt-get install -y \
     curl && \
     rm -rf /var/lib/apt/lists/*
 
+# Install ASP.NET Core runtime
+RUN curl -SL --output aspnetcore-runtime.tar.gz https://download.visualstudio.microsoft.com/download/pr/2f0b5f77-b566-41eb-b3a7-3bc7390a235d/182227f7c0733b5d627444e15962065e/aspnetcore-runtime-3.1.27-linux-x64.tar.gz \
+    && mkdir -p /usr/share/dotnet \
+    && tar -ozxf aspnetcore-runtime.tar.gz -C /usr/share/dotnet \
+    && rm aspnetcore-runtime.tar.gz
+
 # Upgrade pip
 RUN python -m pip install --upgrade pip
 
