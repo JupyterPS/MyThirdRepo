@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-bionic AS dotnet
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS dotnet
 
 # Create a new base image from the Jupyter base-notebook
 FROM jupyter/base-notebook:latest
@@ -21,12 +21,6 @@ RUN apt-get update && apt-get install -y \
     zlib1g \
     curl && \
     rm -rf /var/lib/apt/lists/*
-
-# Install ASP.NET Core runtime
-RUN curl -SL --output aspnetcore-runtime.tar.gz https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/3.1.27/aspnetcore-runtime-3.1.27-linux-x64.tar.gz \
-    && mkdir -p /usr/share/dotnet \
-    && tar -xzf aspnetcore-runtime.tar.gz -C /usr/share/dotnet \
-    && rm aspnetcore-runtime.tar.gz
 
 # Upgrade pip
 RUN python -m pip install --upgrade pip
