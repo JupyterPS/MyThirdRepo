@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     libicu-dev \
     build-essential \
+    wget \
     && curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n \
     && chmod +x /usr/local/bin/n \
     && n 14.17.0 \
@@ -23,8 +24,8 @@ RUN apt-get update && apt-get install -y \
 # Install JupyterLab separately to avoid memory issues
 RUN python3 -m pip install jupyterlab
 
-# Download and install OpenSSL 1.0.2 from the official source
-RUN curl -O https://www.openssl.org/source/old/1.0.2/openssl-1.0.2u.tar.gz \
+# Use wget to download and install OpenSSL 1.0.2 from a verified URL
+RUN wget https://www.openssl.org/source/openssl-1.0.2u.tar.gz \
     && tar -xvzf openssl-1.0.2u.tar.gz \
     && cd openssl-1.0.2u \
     && ./config \
