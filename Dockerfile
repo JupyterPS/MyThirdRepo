@@ -15,6 +15,10 @@ RUN apt-get update && apt-get install -y \
     && python3 -m pip install notebook numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose \
     && jupyter lab build --minimize=False
 
+# Create jovyan user and group
+RUN groupadd -g 1000 users \
+    && useradd -m -d /home/jovyan -s /bin/bash -u 1000 -g users jovyan
+
 # Set working directory
 WORKDIR /home/jovyan
 
