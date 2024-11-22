@@ -21,17 +21,17 @@ RUN apt-get update && apt-get install -y \
 # Install JupyterLab separately to avoid memory issues
 RUN python3 -m pip install jupyterlab
 
-# Install .NET Runtime to ensure necessary components are present
-RUN apt-get install -y dotnet-runtime-3.1
+# Install .NET Runtime using the official installation script
+RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1 --install-dir /usr/share/dotnet
 
 # Install .NET Interactive tool
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302
+RUN /usr/share/dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302
 
 # Configure PATH
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
 # Install the .NET Interactive kernels (including PowerShell)
-RUN dotnet interactive jupyter install
+RUN /root/.dotnet/tools/dotnet-interactive jupyter install
 
 # Create jovyan user and group only if they don't already exist
 RUN if ! id -u jovyan >/dev/null 2>&1; then \
