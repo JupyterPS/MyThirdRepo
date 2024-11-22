@@ -25,7 +25,6 @@ RUN python3 -m pip install jupyterlab
 
 # Download and install OpenSSL 1.0.2 from the official source
 RUN curl -O https://www.openssl.org/source/old/1.0.2/openssl-1.0.2u.tar.gz \
-    && file openssl-1.0.2u.tar.gz \
     && tar -xvzf openssl-1.0.2u.tar.gz \
     && cd openssl-1.0.2u \
     && ./config \
