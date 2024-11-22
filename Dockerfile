@@ -3,6 +3,9 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1-bionic AS dotnet
 # Create a new base image from the Jupyter base-notebook
 FROM jupyter/base-notebook:latest
 
+# Switch to root user for installing dependencies
+USER root
+
 # Copy .NET SDK tools from the dotnet image
 COPY --from=dotnet /usr/share/dotnet /usr/share/dotnet
 COPY --from=dotnet /usr/bin/dotnet /usr/bin/dotnet
@@ -42,7 +45,6 @@ ARG NB_UID=1000
 ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
-USER root
 
 # Copy configuration files and notebooks
 COPY ./config ${HOME}/.jupyter/
