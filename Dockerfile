@@ -28,29 +28,21 @@ USER root
 # Install curl
 RUN apt-get update && apt-get install -y curl
 
-# Debug: Check available packages
-RUN apt-cache search libicu
-RUN apt-cache search libssl
+# Add older repository for libssl1.0.0
+RUN echo "deb http://ftp.us.debian.org/debian/ jessie main" > /etc/apt/sources.list.d/jessie.list
 
-ENV \
-    DOTNET_RUNNING_IN_CONTAINER=true \
-    DOTNET_USE_POLLING_FILE_WATCHER=true \
-    NUGET_XMLDOC_MODE=skip \
-    DOTNET_TRY_CLI_TELEMETRY_OPTOUT=true
-
-# Install .NET CLI dependencies
+# Install libssl1.0.0
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         libc6 \
         libgcc1 \
         libgssapi-krb5-2 \
-        libicu-dev \
-        libssl3 \
+        libssl1.0.0 \
         libstdc++6 \
         zlib1g && \
     rm -rf /var/lib/apt/lists/*
 
-# Install .NET Core SDK
+# Install .NET CLI dependencies
 RUN dotnet_sdk_version=3.1.301 \
     && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
     && dotnet_sha512='dd39931df438b8c1561f9a3bdb50f72372e29e5706d3fb4c490692f04a3d55f5acc0b46b8049bc7ea34dedba63c71b4c64c57032740cbea81eef1dce41929b4e' \
