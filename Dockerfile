@@ -1,22 +1,16 @@
-FROM mcr.microsoft.com/dotnet/interactive:3.1
+# Use the official .NET ASP.NET Core image as the base image
+FROM mcr.microsoft.com/dotnet/aspnet:3.1
 
 # Switch to root user to install additional dependencies
 USER root
 
-# Upgrade pip
-RUN python -m pip install --upgrade pip
-
-# Copy requirements.txt file
-COPY requirements.txt ./requirements.txt
-
-# Install Python packages
-RUN python -m pip install -r requirements.txt
-
-# Install additional Python packages
-RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
-
-# Build JupyterLab
-RUN jupyter lab build --minimize=False
+# Install Jupyter and additional Python packages
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    && python3 -m pip install --upgrade pip \
+    && python3 -m pip install notebook numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose \
+    && jupyter lab build --minimize=False
 
 # Set working directory
 WORKDIR /home/jovyan
