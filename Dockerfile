@@ -38,6 +38,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 
+
 # Install .NET Core SDK
 RUN dotnet_sdk_version=3.1.301 \
     && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
