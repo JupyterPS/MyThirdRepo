@@ -18,9 +18,11 @@ RUN apt-get update && apt-get install -y \
 # Install JupyterLab separately to avoid memory issues
 RUN python3 -m pip install jupyterlab
 
-# Create jovyan user and group
-RUN groupadd -g 1000 users \
-    && useradd -m -d /home/jovyan -s /bin/bash -u 1000 -g users jovyan
+# Create jovyan user and group only if they don't already exist
+RUN if ! id -u jovyan >/dev/null 2>&1; then \
+        groupadd -g 1000 users; \
+        useradd -m -d /home/jovyan -s /bin/bash -u 1000 -g users jovyan; \
+    fi
 
 # Set working directory
 WORKDIR /home/jovyan
