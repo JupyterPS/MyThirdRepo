@@ -32,18 +32,10 @@ RUN apt-get update && apt-get install -y \
     libgcc1 \
     libgssapi-krb5-2 \
     libicu-dev \
+    libssl-dev \
+    libstdc++6 \
     zlib1g && \
     rm -rf /var/lib/apt/lists/*
-
-# Download and install OpenSSL 1.0
-RUN curl -SL --output openssl-1.0.2t.tar.gz https://www.openssl.org/source/openssl-1.0.2t.tar.gz \
-    && tar -xzvf openssl-1.0.2t.tar.gz \
-    && cd openssl-1.0.2t \
-    && ./config \
-    && make \
-    && make install \
-    && cd .. \
-    && rm -rf openssl-1.0.2t openssl-1.0.2t.tar.gz
 
 # Install .NET Core SDK
 RUN dotnet_sdk_version=3.1.301 \
