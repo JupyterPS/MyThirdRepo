@@ -18,6 +18,15 @@ RUN apt-get update && apt-get install -y \
 # Install JupyterLab separately to avoid memory issues
 RUN python3 -m pip install jupyterlab
 
+# Install .NET Interactive tool
+RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302
+
+# Configure PATH
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Install the .NET Interactive kernels (including PowerShell)
+RUN dotnet interactive jupyter install
+
 # Create jovyan user and group only if they don't already exist
 RUN if ! id -u jovyan >/dev/null 2>&1; then \
         groupadd -g 1000 users; \
@@ -37,9 +46,6 @@ RUN chown -R jovyan:users /home/jovyan
 
 # Switch back to jovyan user
 USER jovyan
-
-# Set path for .NET tools
-ENV PATH="${PATH}:/home/jovyan/.dotnet/tools"
 
 # Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
