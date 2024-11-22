@@ -57,8 +57,10 @@ COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Change ownership
-RUN chown -R ${NB_UID} ${HOME}
+# Change ownership and verify user exists
+RUN chown -R ${NB_UID} ${HOME} && id ${NB_UID}
+
+# Switch back to the Jupyter user
 USER ${USER}
 
 # Install nteract
