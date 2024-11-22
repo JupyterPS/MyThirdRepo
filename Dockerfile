@@ -2,7 +2,14 @@ FROM jupyter/base-notebook:latest
 RUN python -m pip install --upgrade pip
 COPY requirements.txt ./requirements.txt
 RUN python -m pip  install -r requirements.txt
-RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
+#RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
+
+RUN python -m pip install --upgrade --no-deps --force-reinstall notebook \
+    && python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose \
+    && until jupyter lab build; do echo "Retrying JupyterLab build..."; sleep 2; done
+
+
+
 RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
 RUN jupyter lab build 
 #Working Directory
