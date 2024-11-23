@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     build-essential \
     wget \
-    libssl1.0-dev \
+    libssl-dev \
     && curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n \
     && chmod +x /usr/local/bin/n \
     && n 14.17.0 \
