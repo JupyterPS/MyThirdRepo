@@ -1,14 +1,11 @@
-# Use the official .NET SDK image as the base image
-FROM mcr.microsoft.com/dotnet/sdk:3.1 AS dotnet
+# Use the official .NET Runtime image as the base image
+FROM mcr.microsoft.com/dotnet/runtime:3.1 AS base
 
 # Create a new base image from the Jupyter base-notebook
 FROM jupyter/base-notebook:latest
 
 # Switch to root user to install additional dependencies
 USER root
-
-# Clear Docker cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install required packages, n package manager, and Node.js
 RUN apt-get update && apt-get install -y \
