@@ -34,8 +34,8 @@ RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 6.
 # Install .NET Interactive tool
 RUN /usr/share/dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302
 
-# Inspect the global tools directory
-RUN ls /root/.dotnet/tools
+# List installed global tools and their paths
+RUN /usr/share/dotnet/dotnet tool list --global
 
 # Configure PATH to include .dotnet/tools
 ENV PATH="${PATH}:/root/.dotnet/tools"
