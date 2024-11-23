@@ -1,16 +1,13 @@
-# Use the official .NET SDK image as the base image
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS dotnet
+# Use the official .NET Jupyter integration image
+FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS dotnet
 
 # Create a new base image from the Jupyter base-notebook
-FROM jupyter/base-notebook:latest
+FROM jupyter/datascience-notebook:latest
 
 # Switch to root user to install additional dependencies
 USER root
 
-# Clear Docker cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install required packages, n package manager, and Node.js
+# Install required packages
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
