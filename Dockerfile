@@ -7,6 +7,9 @@ FROM jupyter/base-notebook:latest
 # Switch to root user to install additional dependencies
 USER root
 
+# Clear Docker cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Install required packages, n package manager, and Node.js
 RUN apt-get update && apt-get install -y \
     python3-pip \
