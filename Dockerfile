@@ -28,7 +28,10 @@ RUN apt-get update && apt-get install -y \
 # Install JupyterLab separately to avoid memory issues
 RUN python3 -m pip install jupyterlab
 
-# Install .NET Runtime using the official installation script
+# Install .NET Runtime 3.1 using the official installation script
+RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1 --install-dir /usr/share/dotnet
+
+# Install .NET Runtime 6.0 using the official installation script
 RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 6.0 --install-dir /usr/share/dotnet
 
 # Install .NET Interactive tool
