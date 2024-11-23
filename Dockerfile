@@ -37,6 +37,9 @@ RUN /usr/share/dotnet/dotnet tool install --global Microsoft.dotnet-interactive 
 # Configure PATH
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
+# Ensure dotnet-interactive is installed
+RUN /root/.dotnet/tools/dotnet-interactive --version
+
 # Install the .NET Interactive kernels (including PowerShell)
 RUN /root/.dotnet/tools/dotnet-interactive jupyter install
 
