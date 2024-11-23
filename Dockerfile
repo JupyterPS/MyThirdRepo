@@ -34,17 +34,14 @@ RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 6.
 # Install .NET Interactive tool
 RUN /usr/share/dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302
 
-# List installed global tools and their paths
-RUN /usr/share/dotnet/dotnet tool list --global
-
-# Configure PATH to include .dotnet/tools
-ENV PATH="${PATH}:/root/.dotnet/tools"
+# Set PATH to include .dotnet/tools
+ENV PATH="$PATH:/root/.dotnet/tools:/home/jovyan/.dotnet/tools"
 
 # Ensure dotnet-interactive is installed
-RUN /root/.dotnet/tools/dotnet-interactive --version
+RUN dotnet-interactive --version
 
 # Install the .NET Interactive kernels (including PowerShell)
-RUN /root/.dotnet/tools/dotnet-interactive jupyter install
+RUN dotnet-interactive jupyter install
 
 # Set working directory
 WORKDIR /home/jovyan
