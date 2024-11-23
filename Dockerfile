@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     build-essential \
     wget \
-    && curl -L <https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n> \
+    && curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n \
     && chmod +x /usr/local/bin/n \
     && n 14.17.0 \
     && python3 -m pip install --upgrade pip \
@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y \
 # Install JupyterLab separately to avoid memory issues
 RUN python3 -m pip install jupyterlab
 
-# Use wget to download and install OpenSSL 1.0.2 from a verified URL
-RUN wget https://www.openssl.org/source/openssl-1.0.2u.tar.gz \
+# Download and install OpenSSL 1.0.2 from the official source
+RUN wget https://www.openssl.org/source/old/1.0.2/openssl-1.0.2u.tar.gz \
     && tar -xvzf openssl-1.0.2u.tar.gz \
     && cd openssl-1.0.2u \
     && ./config \
@@ -63,26 +63,6 @@ RUN chown -R jovyan:users /home/jovyan
 
 # Switch back to jovyan user
 USER jovyan
-
-# Enable telemetry
-ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
-
-# Final working directory
-WORKDIR /home/jovyan/WindowsPowerShell/
-
-# Copy configuration files and notebooks
-COPY ./config /home/jovyan/.jupyter/
-COPY ./ /home/jovyan/WindowsPowerShell/
-COPY ./NuGet.config /home/jovyan/nuget.config
-
-# Change ownership to jovyan user
-RUN chown -R jovyan:users /home/jovyan
-
-# Switch back to jovyan user
-USER jovyan
-
-# Set path for .NET tools
-ENV PATH="${PATH}:/home/jovyan/.dotnet/tools"
 
 # Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
