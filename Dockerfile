@@ -75,13 +75,13 @@ RUN mkdir -p /home/jovyan/.dotnet/tools && \
     chown -R jovyan:users /home/jovyan/.dotnet
 
 # Step 19: Install nteract for Jupyter
+USER root
 RUN python3 -m pip install nteract_on_jupyter
 
 # Step 20: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
 # Step 21: Install JupyterLab git extension using pip as root
-USER root
 RUN python3 -m pip install jupyterlab-git
 
 # Step 22: Install JupyterLab GitHub extension using pip as root
