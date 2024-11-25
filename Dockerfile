@@ -7,8 +7,8 @@ FROM jupyter/base-notebook:latest
 # Step 3: Switch to root user to install additional dependencies
 USER root
 
-# Step 4: Clear Docker cache and set environment variables
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* && export DEBIAN_FRONTEND=noninteractive
+# Step 4: Clear Docker cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Step 5: Install required packages, n package manager, and Node.js
 RUN apt-get update && apt-get install -y \
@@ -20,29 +20,29 @@ RUN apt-get update && apt-get install -y \
     wget \
     libssl-dev \
     git \
-    sudo \
-    && curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n \
-    && chmod +x /usr/local/bin/n \
-    && n 14.17.0 \
-    && python3 -m pip install --upgrade pip \
-    && python3 -m pip install notebook numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
+    sudo
 
-# Step 6: Install JupyterLab separately to avoid memory issues
-RUN python3 -m pip install jupyterlab
+# Step 6: Install Node.js and upgrade pip
+RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && \
+    chmod +x /usr/local/bin/n && \
+    n 14.17.0 && \
+    python3 -m pip install --upgrade pip
 
-# Step 7: Install .NET Runtime 3.1 using the official installation script
-RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1 --install-dir /usr/share/dotnet
+# Step 7: Install JupyterLab and additional Python packages
+RUN python3 -m pip install notebook numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose && \
+    python3 -m pip install jupyterlab
 
-# Step 8: Install .NET Runtime 6.0 using the official installation script
-RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 6.0 --install-dir /usr/share/dotnet
+# Step 8: Install .NET Runtime 3.1 and 6.0
+RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1 --install-dir /usr/share/dotnet && \
+    curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 6.0 --install-dir /usr/share/dotnet
 
 # Step 9: Set correct permissions and ownership for dotnet and create symbolic link
 RUN chmod -R 755 /usr/share/dotnet && chown -R jovyan:users /usr/share/dotnet && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 
-# Step 10: Verify .NET installation and intermediate cleanup
+# Verify .NET installation
 RUN dotnet --info
 
-# Switch to jovyan user for subsequent commands
+# Step 10: Switch to jovyan user for dotnet tool installation
 USER jovyan
 
 # Step 11: Install .NET Interactive tool
@@ -51,10 +51,7 @@ RUN /usr/share/dotnet/dotnet tool install --global Microsoft.dotnet-interactive 
 # Step 12: Add .dotnet/tools to PATH for jovyan user
 ENV PATH="/home/jovyan/.dotnet/tools:/usr/share/dotnet:${PATH}"
 
-# Step 13: Verify dotnet and dotnet-interactive installations
-RUN echo $PATH
-RUN ls -la /home/jovyan/.dotnet/tools
-RUN ls -la /usr/share/dotnet
+# Step 13: Verify dotnet-interactive installation
 RUN dotnet-interactive --version
 
 # Step 14: Install the .NET Interactive kernels (including PowerShell)
