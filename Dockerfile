@@ -50,12 +50,12 @@ RUN /usr/share/dotnet/dotnet tool install --global Microsoft.dotnet-interactive 
 # Step 12: Add .dotnet/tools to PATH for jovyan user
 ENV PATH="/home/jovyan/.dotnet/tools:/usr/share/dotnet:${PATH}"
 
-# Step 13: Install the .NET Interactive kernels (including PowerShell)
-RUN dotnet-interactive jupyter install
+# Step 13: Verify dotnet and dotnet-interactive installations
+RUN dotnet --info
+RUN dotnet-interactive --version
 
-# Step 14: Install PowerShell kernel
-RUN pip install powershell_kernel
-RUN python -m powershell_kernel.install
+# Step 14: Install the .NET Interactive kernels (including PowerShell)
+RUN dotnet-interactive jupyter install
 
 # Step 15: Set the working directory
 WORKDIR /home/jovyan
@@ -116,4 +116,4 @@ RUN mkdir -p /home/jovyan/.jupyter && \
 CMD tail -f /home/jovyan/.jupyter/jupyter.log
 
 # Step 29: Run Jupyter Notebook and ensure logs capture kernel activity
-CMD jupyter notebook --allow-root --no-browser --ip=0.0.0.0 --port=8888 --NotebookApp.log_level=DEBUG --NotebookApp.log_file=/home/jovyan/.jupyter/jupyter.log -Xfrozen_modules=off
+CMD jupyter notebook --allow-root --no-browser --ip=0.0.0.0 --port=8888 --NotebookApp.log_level=DEBUG --NotebookApp.log_file=/home/jovyan/.jupyter/jupyter.log
