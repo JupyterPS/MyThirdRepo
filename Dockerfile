@@ -114,3 +114,9 @@ CMD tail -f /home/jovyan/.jupyter/jupyter.log
 
 # Step 30: Run Jupyter Notebook and ensure logs capture kernel activity
 CMD jupyter notebook --allow-root --no-browser --ip=0.0.0.0 --port=8888 --NotebookApp.log_level=DEBUG --NotebookApp.log_file=/home/jovyan/.jupyter/jupyter.log
+
+RUN pip install powershell_kernel
+RUN python -m powershell_kernel.install
+
+# Step 31: Verify kernel installations (Optional)
+RUN jupyter kernelspec list
