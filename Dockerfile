@@ -109,5 +109,7 @@ RUN mkdir -p /home/jovyan/.jupyter && echo "c.NotebookApp.log_level = 'DEBUG'" >
 # Step 29: Add a command to view logs after start
 CMD tail -f /home/jovyan/.jupyter/jupyter.log
 
+jupyter lab --browser Firefox
+
 # Step 30: Run Jupyter Notebook
 CMD jupyter notebook --allow-root --no-browser --ip=0.0.0.0 --port=8888
