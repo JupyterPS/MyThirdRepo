@@ -30,6 +30,9 @@ RUN apt-get update && apt-get install -y \
 # Step 6: Install JupyterLab separately to avoid memory issues
 RUN python3 -m pip install jupyterlab
 
+# Step 7: Install Tornado
+RUN python -m pip install tornado==5.1.1
+
 # Step 7: Install .NET Runtime 3.1 using the official installation script
 RUN curl -SL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1 --install-dir /usr/share/dotnet
 
