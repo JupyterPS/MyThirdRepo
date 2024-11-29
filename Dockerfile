@@ -71,7 +71,7 @@ ENV LANG=C.UTF-8
 
 # Switch to jovyan user
 USER jovyan
-
+ 
 # Install nteract
 RUN pip install --user nteract_on_jupyter
 
