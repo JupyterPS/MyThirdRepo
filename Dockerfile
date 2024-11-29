@@ -10,8 +10,9 @@ RUN if ! id "jovyan" >/dev/null 2>&1; then \
     useradd -m -s /bin/bash -u 1000 -g jovyan jovyan; \
     fi
 
-# Create log directory
-RUN mkdir -p /home/jovyan/jupyter-logs
+# Create log directory with correct permissions
+RUN mkdir -p /home/jovyan/jupyter-logs && \
+    chown -R jovyan:jovyan /home/jovyan/jupyter-logs
 
 # Upgrade pip and install required packages, Node.js, and dependencies
 RUN apt-get update && apt-get install -y \
@@ -97,4 +98,3 @@ ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 WORKDIR ${HOME}/WindowsPowerShell
-
