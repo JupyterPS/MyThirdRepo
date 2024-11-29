@@ -11,7 +11,7 @@ RUN if ! id "jovyan" >/dev/null 2>&1; then \
     fi
 
 # Create log directory
-RUN mkdir -p /var/log/jupyter
+RUN mkdir -p /home/jovyan/jupyter-logs
 
 # Upgrade pip and install required packages, Node.js, and dependencies
 RUN apt-get update && apt-get install -y \
@@ -22,8 +22,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     wget \
     git \
-    sudo \
-    rsyslog
+    sudo
 
 # Install Node.js
 RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && \
@@ -56,36 +55,32 @@ RUN wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2
     dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 
 # Verify .NET SDK installation in /home/jovyan/.dotnet
-RUN ls -la /home/jovyan/.dotnet && \
-    echo "DOTNET SDK installation completed."
+RUN ls -la /home/jovyan/.dotnet >> /home/jovyan/jupyter-logs/install.log && \
+    echo "DOTNET SDK installation completed." >> /home/jovyan/jupyter-logs/install.log
 
 # Set the PATH environment variable
 ENV PATH="/home/jovyan/.dotnet:/home/jovyan/.dotnet/tools:${PATH}"
 ENV DOTNET_ROOT="/home/jovyan/.dotnet"
 
 # Install .NET Interactive tool
-RUN /home/jovyan/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
+RUN /home/jovyan/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json' >> /home/jovyan/jupyter-logs/install.log
 
 # Install .NET Interactive Jupyter kernel
-RUN /home/jovyan/.dotnet/dotnet interactive jupyter install
+RUN /home/jovyan/.dotnet/dotnet interactive jupyter install >> /home/jovyan/jupyter-logs/install.log
 
 # Create directories with correct permissions
 RUN mkdir -p /home/jovyan/.local/lib /home/jovyan/.local/etc && \
-    chown -R 1000:1000 /home/jovyan/.local
+    chown -R 1000:1000 /home/jovyan/.local >> /home/jovyan/jupyter-logs/install.log
 
 # Enforce UTF-8 encoding
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-# Set up logging and restart rsyslog
-RUN echo "*.* /var/log/jupyter/notebook.log" | tee -a /etc/rsyslog.d/50-default.conf && \
-    service rsyslog restart
-
 # Switch to jovyan user
 USER jovyan
 
 # Install nteract
-RUN pip install --user nteract_on_jupyter
+RUN pip install --user nteract_on_jupyter >> /home/jovyan/jupyter-logs/install.log
 
 # Set up the working directory
 WORKDIR /home/jovyan
@@ -102,3 +97,4 @@ ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 WORKDIR ${HOME}/WindowsPowerShell
+
