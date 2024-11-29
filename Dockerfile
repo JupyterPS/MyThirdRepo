@@ -4,15 +4,11 @@ FROM jupyter/base-notebook:latest
 # Switch to root user
 USER root
 
-# Create the jovyan user and group explicitly if they do not exist
-RUN if ! id "jovyan" >/dev/null 2>&1; then \
-    groupadd -g 1000 jovyan && \
-    useradd -m -s /bin/bash -u 1000 -g jovyan jovyan; \
-    fi
+# Create the jovyan user and group explicitly
+RUN groupadd -g 1000 jovyan && useradd -m -s /bin/bash -u 1000 -g jovyan jovyan
 
 # Create log directory with correct permissions
-RUN mkdir -p /home/jovyan/jupyter-logs && \
-    chown -R jovyan:jovyan /home/jovyan/jupyter-logs
+RUN mkdir -p /home/jovyan/jupyter-logs && chown -R 1000:1000 /home/jovyan/jupyter-logs
 
 # Upgrade pip and install required packages, Node.js, and dependencies
 RUN apt-get update && apt-get install -y \
@@ -26,16 +22,14 @@ RUN apt-get update && apt-get install -y \
     sudo
 
 # Install Node.js
-RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && \
-    chmod +x /usr/local/bin/n && \
-    n 14.17.0
+RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && chmod +x /usr/local/bin/n && n 14.17.0
 
 # Upgrade pip
 RUN python3 -m pip install --upgrade pip
 
 # Install Python dependencies in smaller chunks to avoid errors
-RUN python3 -m pip install notebook numpy spotipy
-RUN python3 -m pip install scipy matplotlib ipython jupyter pandas sympy nose
+RUN python3 -m pip install notebook numpy spotipy && \
+    python3 -m pip install scipy matplotlib ipython jupyter pandas sympy nose
 
 # Install JupyterLab Git and related extensions
 RUN python -m pip install jupyterlab-git jupyterlab_github
@@ -47,17 +41,13 @@ RUN python -m pip install jupyterthemes ipywidgets
 RUN python -m pip install tornado==6.3.3
 
 # Install .NET SDK using the official Microsoft script
-RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
-    chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel 3.1
+RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && chmod +x dotnet-install.sh && ./dotnet-install.sh --channel 3.1
 
 # Manually download and install libssl1.1
-RUN wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb && \
-    dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+RUN wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb && dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 
 # Verify .NET SDK installation in /home/jovyan/.dotnet
-RUN ls -la /home/jovyan/.dotnet >> /home/jovyan/jupyter-logs/install.log && \
-    echo "DOTNET SDK installation completed." >> /home/jovyan/jupyter-logs/install.log
+RUN ls -la /home/jovyan/.dotnet >> /home/jovyan/jupyter-logs/install.log && echo "DOTNET SDK installation completed." >> /home/jovyan/jupyter-logs/install.log
 
 # Set the PATH environment variable
 ENV PATH="/home/jovyan/.dotnet:/home/jovyan/.dotnet/tools:${PATH}"
@@ -70,8 +60,7 @@ RUN /home/jovyan/.dotnet/dotnet tool install --global Microsoft.dotnet-interacti
 RUN /home/jovyan/.dotnet/dotnet interactive jupyter install >> /home/jovyan/jupyter-logs/install.log
 
 # Create directories with correct permissions
-RUN mkdir -p /home/jovyan/.local/lib /home/jovyan/.local/etc && \
-    chown -R 1000:1000 /home/jovyan/.local >> /home/jovyan/jupyter-logs/install.log
+RUN mkdir -p /home/jovyan/.local/lib /home/jovyan/.local/etc && chown -R 1000:1000 /home/jovyan/.local >> /home/jovyan/jupyter-logs/install.log
 
 # Enforce UTF-8 encoding
 ENV LC_ALL=C.UTF-8
@@ -95,6 +84,6 @@ COPY --chown=1000:1000 ./NuGet.config ${HOME}/nuget.config
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
 # Set default user and working directory
-USER ${USER}
+USER jovyan
 WORKDIR ${HOME}/Notebooks/
 WORKDIR ${HOME}/WindowsPowerShell
