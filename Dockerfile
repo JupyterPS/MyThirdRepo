@@ -6,7 +6,8 @@ USER root
 
 # Create the jovyan user and group explicitly if they do not exist
 RUN if ! id "jovyan" >/dev/null 2>&1; then \
-    groupadd -g 1000 jovyan && useradd -m -s /bin/bash -u 1000 -g jovyan jovyan; \
+    groupadd -g 1000 jovyan && \
+    useradd -m -s /bin/bash -u 1000 -g jovyan jovyan; \
     fi
 
 # Create log directory with correct permissions
@@ -72,7 +73,7 @@ ENV LANG=C.UTF-8
 USER jovyan
 
 # Install nteract
-RUN pip install --user nteract_on_jupyter >> /home/jovyan/jupyter-logs/install.log
+RUN pip install --user nteract_on_jupyter
 
 # Set up the working directory
 WORKDIR /home/jovyan
