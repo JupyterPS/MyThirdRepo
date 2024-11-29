@@ -4,8 +4,10 @@ FROM jupyter/base-notebook:latest
 # Switch to root user
 USER root
 
-# Create the jovyan user and group explicitly
-RUN groupadd -g 1000 jovyan && useradd -m -s /bin/bash -u 1000 -g jovyan jovyan
+# Create the jovyan user and group explicitly if they do not exist
+RUN if ! id "jovyan" >/dev/null 2>&1; then \
+    groupadd -g 1000 jovyan && useradd -m -s /bin/bash -u 1000 -g jovyan jovyan; \
+    fi
 
 # Create log directory with correct permissions
 RUN mkdir -p /home/jovyan/jupyter-logs && chown -R 1000:1000 /home/jovyan/jupyter-logs
