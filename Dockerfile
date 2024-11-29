@@ -77,6 +77,10 @@ RUN mkdir -p /home/jovyan/.local/lib /home/jovyan/.local/etc && \
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
+# Set up logging and restart rsyslog
+RUN echo "*.* /var/log/jupyter/notebook.log" | tee -a /etc/rsyslog.d/50-default.conf && \
+    service rsyslog restart
+
 # Switch to jovyan user
 USER jovyan
 
@@ -93,16 +97,6 @@ COPY --chown=1000:1000 ./NuGet.config ${HOME}/nuget.config
 
 # Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
-
-# Set up logging and restart rsyslog
-RUN echo "*.* /var/log/jupyter/notebook.log" >> /etc/rsyslog.d/50-default.conf && \
-    service rsyslog restart
-
-# Create a directory to store logs
-RUN mkdir -p /home/jovyan/jupyter-logs
-
-# Copy logs to a directory accessible from the repository
-RUN cp /var/log/jupyter/notebook.log /home/jovyan/jupyter-logs/
 
 # Set default user and working directory
 USER ${USER}
